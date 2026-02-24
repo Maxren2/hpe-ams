@@ -18,7 +18,7 @@ RUN apt-key list --keyring /etc/apt/keyrings/hpePublicKey2048_key2.gpg
 # Add repo definition (deb822 style)
 ADD mcp.sources /etc/apt/sources.list.d/
 
-RUN apt-get update && apt-get install -y hp-ams hponcfg storcli ssa ssacli ssaducli && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y hp-ams hp-health hponcfg hp-snmp-agents hpsmh hp-smh-templates ssacli ssaducli ssa storcli && apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests python3 && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN curl -LO "https://github.com/gdraheim/docker-systemctl-replacement/archive/refs/tags/v1.5.9063.tar.gz"
