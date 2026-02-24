@@ -2,7 +2,7 @@
 
 Docker image for running HPE AMS on TrueNAS Scale.
 
-Based on an Ubuntu 24.04 (LTS) container. The Dockerfile installs AMS and other
+Based on an Ubuntu 12.04 (LTS) container. The Dockerfile installs AMS and other
 HPE services through APT from https://downloads.linux.hpe.com/SDR.
 
 The GitHub Action automatically builds a new container and pushes it to GHCR.
@@ -20,17 +20,11 @@ docker pull ghcr.io/Maxren2/hpe-ams:main
   - Exec: /sbin/ahslog -f $OPTIONS
   - Env: /etc/sysconfig/ahslog (non-existing)
 
-- amsd.service
+- hp-ams.service
   - Name: Agentless Management Service daemon
   - Exec: /sbin/amsd -f $OPTIONS
-  - Env: /etc/sysconfig/amsd (non-existing)
+  - Env: /etc/sysconfig/hp-ams (non-existing)
   - Requires: smad.service
-
-- amsd_rev.service:
-  - Name: Agentless Management Service (Reverse Mode)
-  - Exec: /sbin/amsd_rev -f $OPTIONS
-  - Env: /etc/sysconfig/amsd_rev (non-existing)
-  - After: snmpd.service
 
 - cpqFca.service
   - Name: cpqFca MIB handler
