@@ -1,6 +1,6 @@
-FROM ubuntu:24.04
+FROM ubuntu:16.04
 
-LABEL org.opencontainers.image.source="https://github.com/endrebjorsvik/hpe-amsd"
+LABEL org.opencontainers.image.source="https://github.com/Maxren2/hpe-ams"
 LABEL org.opencontainers.image.description="Small container for running HPE AMS software in a privileged container on TrueNAS Scale."
 LABEL org.opencontainers.image.licenses="MIT"
 
@@ -18,7 +18,7 @@ RUN apt-key list --keyring /etc/apt/keyrings/hpePublicKey2048_key2.gpg
 # Add repo definition (deb822 style)
 ADD mcp.sources /etc/apt/sources.list.d/
 
-RUN apt-get update && apt-get install -y amsd hponcfg storcli ssa ssacli ssaducli && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y hp-ams hponcfg storcli ssa ssacli ssaducli && apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests python3 && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN curl -LO "https://github.com/gdraheim/docker-systemctl-replacement/archive/refs/tags/v1.5.9063.tar.gz"
