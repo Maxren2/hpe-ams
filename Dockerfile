@@ -20,6 +20,8 @@ RUN apt-get update && \
 # 2. Import HPE repository key
 # ------------------------------------------------------------------
 RUN install -d -m0755 /etc/apt/keyrings && \
+    curl -fsSL https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key1.pub | \
+        gpg --dearmor -o /etc/apt/keyrings/hpePublicKey2048_key1.gpg && \
     curl -fsSL https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key2.pub \
       | gpg --dearmor -o /etc/apt/keyrings/hpePublicKey2048_key2.gpg && \
     chmod 644 /etc/apt/keyrings/*
