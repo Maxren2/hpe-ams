@@ -10,7 +10,7 @@ The GitHub Action automatically builds a new container and pushes it to GHCR.
 To use container, run the following command:
 
 ```
-docker pull ghcr.io/Maxren2/hpe-ams:main
+docker pull ghcr.io/maxren2/hpe-ams:main
 ```
 
 ## systemd services in image
