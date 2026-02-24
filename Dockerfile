@@ -4,40 +4,60 @@ LABEL org.opencontainers.image.source="https://github.com/Maxren2/hpe-ams"
 LABEL org.opencontainers.image.description="Small container for running HPE AMS software in a privileged container on TrueNAS Scale."
 LABEL org.opencontainers.image.licenses="MIT"
 
-# Install dependencies for populating APT keyring
-RUN apt-get update && apt-get install -y curl gnupg apt-utils iproute2 && apt-get clean && rm -rf /var/lib/apt/lists/*
+# ──────────────────────────────────────────────────────────────
+# 1. Base utilities + HTTPS transport for APT (required on 16.04)
+# ──────────────────────────────────────────────────────────────
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        curl gnupg apt-utils iproute2 \
+        apt-transport-https ca-certificates && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# See https://downloads.linux.hpe.com/SDR/keys.html for repo signing keys
-RUN mkdir -m 0755 -p /etc/apt/keyrings
-#RUN curl https://downloads.linux.hpe.com/SDR/hpPublicKey2048_key1.pub | gpg --dearmor -o /etc/apt/keyrings/hpPublicKey2048_key1.gpg
-#RUN curl https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key1.pub | gpg --dearmor -o /etc/apt/keyrings/hpePublicKey2048_key1.gpg
-RUN curl https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key2.pub | gpg --dearmor -o /etc/apt/keyrings/hpePublicKey2048_key2.gpg
-RUN chmod 644 /etc/apt/keyrings/*
+# ──────────────────────────────────────────────────────────────
+# 2. Import HPE repo signing key
+# ──────────────────────────────────────────────────────────────
+RUN install -d -m0755 /etc/apt/keyrings && \
+    curl -fsSL https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key2.pub \
+      | gpg --dearmor -o /etc/apt/keyrings/hpePublicKey2048_key2.gpg && \
+    chmod 644 /etc/apt/keyrings/*
+
+# Optional: show the key (handy for debugging)
 RUN apt-key list --keyring /etc/apt/keyrings/hpePublicKey2048_key2.gpg
 
-# Add repo definition (deb822 style)
+# ──────────────────────────────────────────────────────────────
+# 3. Add HPE MCP repository (deb822 format)
+# ──────────────────────────────────────────────────────────────
 ADD mcp.sources /etc/apt/sources.list.d/
 
-RUN apt-get update && apt-get install -y hp-ams hp-health hponcfg hp-snmp-agents hpsmh hp-smh-templates ssacli ssaducli ssa storcli && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests python3 && apt-get clean && rm -rf /var/lib/apt/lists/*
+# ──────────────────────────────────────────────────────────────
+# 4. Install HPE utilities + Python
+# ──────────────────────────────────────────────────────────────
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        hp-ams hp-health hponcfg hp-snmp-agents hpsmh hp-smh-templates \
+        ssacli ssaducli ssa storcli \
+        python3 && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN curl -LO "https://github.com/gdraheim/docker-systemctl-replacement/archive/refs/tags/v1.5.9063.tar.gz"
-RUN tar -xvf "v1.5.9063.tar.gz"
-RUN cp /docker-systemctl-replacement-1.5.9063/files/docker/* /usr/bin/
-RUN ln -s "/usr/bin/systemctl3.py" "/usr/bin/systemctl"
-RUN chmod +x "/usr/bin/systemctl3.py" "/usr/bin/journalctl3.py"
+# ──────────────────────────────────────────────────────────────
+# 5. Systemd-replacement for containers
+# ──────────────────────────────────────────────────────────────
+RUN curl -fsSL -o /tmp/systemctl.tar.gz \
+      https://github.com/gdraheim/docker-systemctl-replacement/archive/refs/tags/v1.5.9063.tar.gz && \
+    tar -xzf /tmp/systemctl.tar.gz -C /tmp && \
+    cp /tmp/docker-systemctl-replacement-*/files/docker/* /usr/bin/ && \
+    ln -s /usr/bin/systemctl3.py /usr/bin/systemctl && \
+    chmod +x /usr/bin/systemctl3.py /usr/bin/journalctl3.py && \
+    rm -rf /tmp/systemctl.tar.gz /tmp/docker-systemctl-replacement-*
 
-RUN mkdir -p /etc/sysconfig
-# Ensure that all services log to stdout instead of file.
-RUN echo "OPTIONS=-L" > /etc/sysconfig/amsd
-RUN echo "OPTIONS=-L" > /etc/sysconfig/amsd_rev
-RUN echo "OPTIONS=-L" > /etc/sysconfig/cpqFca
-RUN echo "OPTIONS=-L" > /etc/sysconfig/cpqIde
-RUN echo "OPTIONS=-L" > /etc/sysconfig/cpqScsi
-RUN echo "OPTIONS=-L" > /etc/sysconfig/cpqiScsi
-RUN echo "OPTIONS=-L" > /etc/sysconfig/smad_rev
-
-RUN rm "/etc/systemd/system/multi-user.target.wants/ahslog.service"
-RUN rm "/etc/systemd/system/multi-user.target.wants/mr_cpqScsi.service"
+# ──────────────────────────────────────────────────────────────
+# 6. Service tweaks
+# ──────────────────────────────────────────────────────────────
+RUN mkdir -p /etc/sysconfig && \
+    for f in amsd amsd_rev cpqFca cpqIde cpqScsi cpqiScsi smad_rev; do \
+        echo "OPTIONS=-L" > /etc/sysconfig/$f ; \
+    done && \
+    rm -f /etc/systemd/system/multi-user.target.wants/ahslog.service \
+          /etc/systemd/system/multi-user.target.wants/mr_cpqScsi.service
 
 CMD ["/usr/bin/systemctl", "--init", "-vv"]
