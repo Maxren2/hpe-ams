@@ -15,6 +15,16 @@ RUN apt-get update && \
         curl gnupg apt-utils iproute2 \
         apt-transport-https ca-certificates && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+    
+# Locale + PATH so docker-systemctl-replacement handles UTF-8 scripts
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends locales && \
+    sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+    locale-gen
+
+ENV LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8 \
+    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # ──────────────────────────────────────────────────────────────
 # 2. Import ALL HPE/HP repository keys into the global key-ring
