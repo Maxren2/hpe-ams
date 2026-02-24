@@ -1,7 +1,7 @@
 Types: deb
 URIs: https://downloads.linux.hpe.com/SDR/repo/mcp
-# Ubuntu 24.04 is "noble"
-Suites: noble/current
+# Ubuntu 16.04 is "noble"
+Suites: xenial/current-gen9
 Components: non-free
 Enabled: yes
 Signed-By: /etc/apt/keyrings/hpePublicKey2048_key2.gpg
