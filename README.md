@@ -1,8 +1,8 @@
-# hpe-amsd
+# hpe-ams
 
 Docker image for running HPE AMS on TrueNAS Scale.
 
-Based on an Ubuntu 24.04 (LTS) container. The Dockerfile installs AMSD and other
+Based on an Ubuntu 24.04 (LTS) container. The Dockerfile installs AMS and other
 HPE services through APT from https://downloads.linux.hpe.com/SDR.
 
 The GitHub Action automatically builds a new container and pushes it to GHCR.
@@ -10,7 +10,7 @@ The GitHub Action automatically builds a new container and pushes it to GHCR.
 To use container, run the following command:
 
 ```
-docker pull ghcr.io/endrebjorsvik/hpe-amsd:main
+docker pull ghcr.io/Maxren2/hpe-ams:main
 ```
 
 ## systemd services in image
